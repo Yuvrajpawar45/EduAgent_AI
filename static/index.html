@@ -1,0 +1,91 @@
+<!-- Floating Chat Button -->
+<div id="chat-btn" onclick="toggleChat()" style="position:fixed;bottom:28px;right:28px;width:60px;height:60px;background:linear-gradient(135deg,#7c3aed,#ec4899);border-radius:50%;display:grid;place-items:center;cursor:pointer;box-shadow:0 4px 24px rgba(124,58,237,0.4);z-index:999;font-size:1.5rem;transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">💬</div>
+
+<!-- Chat Window -->
+<div id="chat-window" style="display:none;position:fixed;bottom:104px;right:28px;width:370px;height:500px;background:white;border-radius:20px;box-shadow:0 12px 50px rgba(0,0,0,0.18);z-index:999;flex-direction:column;overflow:hidden;">
+  
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#7c3aed,#ec4899);padding:18px 20px;color:white;display:flex;align-items:center;gap:10px;">
+    <div style="width:38px;height:38px;background:rgba(255,255,255,0.2);border-radius:50%;display:grid;place-items:center;font-size:1.2rem;">🎓</div>
+    <div>
+      <div style="font-weight:700;font-size:0.95rem;">EduAgent AI</div>
+      <div style="font-size:0.75rem;opacity:0.8;">● Online — powered by phi3:mini</div>
+    </div>
+    <div onclick="toggleChat()" style="margin-left:auto;cursor:pointer;opacity:0.8;font-size:1.2rem;">✕</div>
+  </div>
+  
+  <!-- Messages -->
+  <div id="messages" style="flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;background:#f9fafb;">
+    <div style="align-self:flex-start;background:white;border:1px solid #e5e7eb;padding:12px 16px;border-radius:16px 16px 16px 4px;font-size:0.88rem;max-width:85%;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,0.06);">
+      👋 Hi! I'm EduAgent AI. Ask me anything about exams, fees, attendance, scholarships, or admissions!
+    </div>
+  </div>
+  
+  <!-- Input -->
+  <div style="padding:14px;border-top:1px solid #e5e7eb;display:flex;gap:8px;background:white;">
+    <input id="user-input" placeholder="Ask about exams, fees, attendance..." 
+      style="flex:1;border:1.5px solid #e5e7eb;border-radius:12px;padding:10px 14px;font-family:inherit;font-size:0.88rem;outline:none;transition:border 0.2s;"
+      onfocus="this.style.border='1.5px solid #7c3aed'"
+      onblur="this.style.border='1.5px solid #e5e7eb'"
+      onkeydown="if(event.key==='Enter')sendMessage()"/>
+    <button onclick="sendMessage()" 
+      style="background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;border:none;border-radius:12px;padding:10px 18px;cursor:pointer;font-weight:700;font-size:0.88rem;transition:opacity 0.2s;"
+      onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">Send</button>
+  </div>
+</div>
+
+<script>
+  let chatOpen = false;
+
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    const w = document.getElementById('chat-window');
+    w.style.display = chatOpen ? 'flex' : 'none';
+    if (chatOpen) document.getElementById('user-input').focus();
+  }
+
+  function addMessage(text, isUser) {
+    const messages = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.style.cssText = isUser
+      ? 'align-self:flex-end;background:linear-gradient(135deg,#7c3aed,#ec4899);color:white;padding:10px 16px;border-radius:16px 16px 4px 16px;font-size:0.88rem;max-width:85%;line-height:1.5;'
+      : 'align-self:flex-start;background:white;border:1px solid #e5e7eb;padding:12px 16px;border-radius:16px 16px 16px 4px;font-size:0.88rem;max-width:85%;line-height:1.5;box-shadow:0 1px 4px rgba(0,0,0,0.06);';
+    div.textContent = text;
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function addTypingIndicator() {
+    const messages = document.getElementById('messages');
+    const div = document.createElement('div');
+    div.id = 'typing';
+    div.style.cssText = 'align-self:flex-start;background:white;border:1px solid #e5e7eb;padding:12px 16px;border-radius:16px 16px 16px 4px;font-size:0.88rem;color:#9ca3af;box-shadow:0 1px 4px rgba(0,0,0,0.06);';
+    div.textContent = '⏳ EduAgent is thinking...';
+    messages.appendChild(div);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  async function sendMessage() {
+    const input = document.getElementById('user-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMessage(text, true);
+    input.value = '';
+    addTypingIndicator();
+
+    try {
+      const res = await fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      const data = await res.json();
+      document.getElementById('typing')?.remove();
+      addMessage(data.answer, false);
+    } catch (err) {
+      document.getElementById('typing')?.remove();
+      addMessage('❌ Could not connect to EduAgent AI. Is the server running?', false);
+    }
+  }
+</script>
