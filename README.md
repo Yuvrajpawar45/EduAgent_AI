@@ -1,20 +1,18 @@
-# EduAgent AI - Multi-Agent Assistant for Academic Administration
+# EduAgent AI
 
 <div align="center">
 
-![EduAgent AI Banner](https://img.shields.io/badge/EduAgent_AI-Multi--Agent_Academic_Assistant-7a1f43?style=for-the-badge&logo=googleclassroom&logoColor=white)
+![EduAgent AI](https://img.shields.io/badge/EduAgent_AI-Multi--Agent_Academic_Assistant-7a1f43?style=for-the-badge&logo=googleclassroom&logoColor=white)
 
-[![Python](https://img.shields.io/badge/Python-3.13-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.115.12-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
-[![Streamlit](https://img.shields.io/badge/Streamlit-1.46.1-FF4B4B?style=flat-square&logo=streamlit&logoColor=white)](https://streamlit.io)
-[![React](https://img.shields.io/badge/React-Student+Admin_UI-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://mongodb.com/atlas)
-[![Ollama](https://img.shields.io/badge/Ollama-phi3:mini-black?style=flat-square&logo=ollama&logoColor=white)](https://ollama.com)
-[![LangChain](https://img.shields.io/badge/LangChain-1.2.10-1C3C3C?style=flat-square&logo=chainlink&logoColor=white)](https://langchain.com)
+[![Python](https://img.shields.io/badge/Python-3.13+-3776AB?style=flat-square&logo=python&logoColor=white)](https://python.org)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![React](https://img.shields.io/badge/React-Vite_UI-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas_/_Local-47A248?style=flat-square&logo=mongodb&logoColor=white)](https://mongodb.com)
+[![Ollama](https://img.shields.io/badge/Ollama-phi3:mini-black?style=flat-square)](https://ollama.com)
 
-**A multi-agent AI helpdesk for students and academic staff, with chat, escalation, fee workflows, exam schedules, and PDF document intelligence.**
+**A multi-agent academic assistant for student support, admin workflows, fee reminders, exam data, escalations, and PDF document intelligence.**
 
-[Features](#-features) • [Architecture](#-system-architecture) • [Tech Stack](#-tech-stack) • [Getting Started](#-getting-started) • [Usage](#-usage)
+[Features](#features) | [Architecture](#architecture) | [Tech Stack](#tech-stack) | [Setup](#setup) | [Usage](#usage)
 
 </div>
 
@@ -22,246 +20,277 @@
 
 ## Overview
 
-EduAgent AI centralizes academic support in one platform:
-- Student asks queries in natural language
-- AI routes, retrieves, and responds using institutional data
-- Sensitive queries are escalated to admin
-- Admin manages FAQs, schedules, fees, and documents
+EduAgent AI is an academic helpdesk platform that combines a FastAPI backend, React dashboards, MongoDB storage, local LLM responses through Ollama, and a small multi-agent pipeline.
 
-It supports MongoDB Atlas as primary storage, with local fallback support to keep the app usable during network/TLS issues.
+Students can log in, ask academic questions, view fee details, request reminders, and download relevant documents. Admin users can manage FAQs, escalations, fee records, exam schedules, uploaded PDFs, and student reminders.
 
----
+The project supports MongoDB Atlas for production-style storage and a local Mongita fallback for development.
 
 ## Features
 
-### Student Side
-- Student login using student ID or enrollment number
-- AI chat for exams, fees, attendance, scholarships, admissions, library
-- Intelligent PDF/document matching and download links
-- Fee ledger view and reminder requests
+### Student App
+
+- Student login using enrollment number or student ID
+- AI chat for exams, fees, attendance, scholarships, admissions, library, and general academic queries
+- PDF/document suggestions with download links
+- Student fee ledger view
+- Fee reminder requests
 - Reminder center with unread tracking
 
-### Admin Side
-- Protected admin login
-- Live metrics for FAQs, escalations, PDFs, exams, fees
-- Full FAQ CRUD
-- Escalation triage and status updates
-- Exam timetable management
-- Fee structure management
-- Student fee-ledger management + reminders
-- PDF upload, processing, and download analytics
+### Admin App
 
-### AI Agent Pipeline
+- Admin login
+- Dashboard metrics for FAQs, escalations, PDFs, exams, fees, students, and ledger entries
+- FAQ create, update, and delete workflows
+- Escalation review and status updates
+- Exam timetable management
+- Fee structure and per-student fee ledger management
+- PDF upload, processing, deletion, and download analytics
+- Fee reminder sending
+
+### AI Pipeline
+
 - Query Understanding Agent
 - Information Retrieval Agent
-- Response Generation Agent (local Ollama model)
-- Escalation Agent
-- PDF matcher/download intent flow
+- Response Generation Agent using Ollama
+- Escalation Agent for sensitive queries
+- PDF matching and download-intent handling
 
----
-
-## System Architecture
+## Architecture
 
 ```text
 Student Query
     |
     v
-+-----------------------------------------------+
-| EduAgent AI Pipeline                          |
-|                                               |
-| 1) Escalation Agent -> Sensitive? -> Admin DB |
-|                 | No                          |
-|                 v                             |
-| 2) Download Intent + PDF Matcher              |
-|                 |                             |
-|                 v                             |
-| 3) Query Understanding Agent                  |
-|                 | (category + keywords)       |
-|                 v                             |
-| 4) Retrieval Agent                            |
-|    -> FAQs / exams / fees / PDF context       |
-|                 v                             |
-| 5) Response Agent (phi3:mini via Ollama)      |
-|                 v                             |
-| Final answer (+ download links when relevant) |
-+-----------------------------------------------+
++------------------------------------------------+
+| EduAgent AI Backend                            |
+|                                                |
+| 1. Escalation Agent                            |
+|    -> Sensitive query? -> Save for admin       |
+|                                                |
+| 2. PDF Download Intent + Document Matcher      |
+|                                                |
+| 3. Query Understanding Agent                   |
+|    -> Category + keywords                      |
+|                                                |
+| 4. Retrieval Agent                             |
+|    -> FAQs / exams / fees / PDFs              |
+|                                                |
+| 5. Response Agent                              |
+|    -> phi3:mini through Ollama                 |
+|                                                |
+| 6. Final answer + relevant links               |
++------------------------------------------------+
 ```
-
----
 
 ## Tech Stack
 
-| Layer | Technology | Purpose |
-|---|---|---|
-| Backend API | FastAPI, Uvicorn | Auth, chat, admin/student endpoints |
-| AI Runtime | Ollama + phi3:mini | Local response generation |
-| Agentic Logic | Python modules (`agents/`) | Classification, retrieval, escalation |
-| Data Store | MongoDB Atlas / Mongita fallback | App data persistence |
-| Document Intelligence | LangChain, sentence-transformers, FAISS/Chroma flow | PDF chunking and semantic retrieval |
-| Web UI (legacy) | Streamlit | Student + admin pages |
-| Web UI (modern) | React + Vite + TypeScript | Student app (`UI`) + admin app (`UI-admin`) |
-
----
+| Layer | Technology |
+| --- | --- |
+| Backend API | FastAPI, Uvicorn |
+| AI runtime | Ollama with `phi3:mini` |
+| Agent logic | Python modules in `agents/` |
+| Database | MongoDB Atlas with Mongita fallback |
+| PDF processing | LangChain, pypdf, sentence-transformers, FAISS |
+| Student UI | React, Vite, TypeScript, Tailwind CSS |
+| Admin UI | React, Vite, TypeScript, Tailwind CSS |
+| Legacy UI | Streamlit |
 
 ## Project Structure
 
 ```text
 EduAgent_AI/
-|
-|- backend_api.py
-|- app.py
-|- start_llm.py
-|- requirements.txt
-|- .env                  (ignored)
-|
-|- agents/
-|  |- query_agent.py
-|  |- retrieval_agent.py
-|  |- response_agent.py
-|  |- escalation_agent.py
-|
-|- database/
-|  |- mongo_db.py
-|  |- seed_mongodb.py
-|  |- db_setup.py
-|  |- academic_data.py
-|
-|- utils/
-|  |- pdf_processor.py
-|
-|- pages/
-|  |- student_chat.py
-|  |- admin_panel.py
-|
-|- UI/                  (React student frontend)
-|- UI-admin/            (React admin frontend)
-|- uploaded_pdfs/       (ignored)
-|- vector_db/           (ignored)
+|-- backend_api.py              # FastAPI backend
+|-- app.py                      # Streamlit legacy app
+|-- start_llm.py                # Ollama helper script
+|-- requirements.txt            # Python dependencies
+|-- agents/                     # Query, retrieval, response, escalation agents
+|-- database/                   # MongoDB helpers and seed data
+|-- pages/                      # Streamlit pages
+|-- utils/                      # PDF processing utilities
+|-- UI/                         # Student React frontend
+|-- UI-admin/                   # Admin React frontend
+|-- uploaded_pdfs/              # Local uploaded PDFs, ignored by git
+`-- vector_db/                  # Local vector data, ignored by git
 ```
 
----
-
-## Getting Started
+## Setup
 
 ### Prerequisites
-- Python 3.13+
-- Node.js (for React frontends)
-- Ollama installed
-- MongoDB Atlas cluster (optional if using local fallback)
 
-### 1) Clone
+- Python 3.13+
+- Node.js 20+ recommended
+- Ollama installed and running
+- MongoDB Atlas connection string, or local fallback enabled
+
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/Yuvrajpawar45/EduAgent_AI.git
 cd EduAgent_AI
 ```
 
-### 2) Install Python Dependencies
+### 2. Create a Python Environment
 
 ```bash
+python -m venv .venv
+.venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3) Configure Environment
+On macOS/Linux:
 
-Create `.env`:
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+### 3. Configure Environment Variables
+
+Create a `.env` file in the project root:
 
 ```env
 MONGO_URI=mongodb+srv://<username>:<password>@<cluster>/?appName=Cluster
 MONGO_DB_NAME=eduagent_db
-ADMIN_PASSWORD=admin123
-
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=phi3:mini
-
 MONGO_FALLBACK_LOCAL=true
+
+ADMIN_PASSWORD=admin123
 ```
 
-### 4) Pull LLM Model
+Important: keep `.env` private. It is already ignored by git.
+
+### 4. Start Ollama
 
 ```bash
 ollama pull phi3:mini
+ollama serve
 ```
 
-### 5) Seed Data
+If Ollama is already running in the background, only the `ollama pull phi3:mini` command is needed once.
+
+### 5. Seed Demo Data
 
 ```bash
 python database/seed_mongodb.py
 ```
 
-### 6) Run Backend
+### 6. Run the Backend
 
 ```bash
 python -m uvicorn backend_api:app --reload --port 8000
 ```
 
-### 7) Run Frontends
+Backend API:
 
-Student UI:
+```text
+http://localhost:8000
+```
+
+### 7. Run the Student UI
+
 ```bash
 cd UI
 npm install
 npm run dev
 ```
 
-Admin UI:
+Default URL:
+
+```text
+http://localhost:5173
+```
+
+### 8. Run the Admin UI
+
+Open a new terminal:
+
 ```bash
 cd UI-admin
 npm install
 npm run dev
 ```
 
-Optional Streamlit:
+Vite will print the local admin URL, commonly:
+
+```text
+http://localhost:5174
+```
+
+## Usage
+
+### Demo Student Login
+
+After seeding demo data, use one of these accounts:
+
+| Enrollment No | Student ID | Password |
+| --- | --- | --- |
+| `ENR001` | `STU-2024-001` | `stu123` |
+| `ENR002` | `STU-2024-002` | `stu123` |
+| `ENR003` | `STU-2024-003` | `stu123` |
+
+### Demo Admin Login
+
+Use the value from your `.env`:
+
+```text
+admin123
+```
+
+Change `ADMIN_PASSWORD` before using the project outside local development.
+
+## Optional Streamlit App
+
+The repository also includes a legacy Streamlit interface:
+
 ```bash
 streamlit run app.py
 ```
 
----
+## Frontend API Configuration
 
-## Usage
+Both React apps use this backend URL by default:
 
-### Student
-1. Login with enrollment/student ID and password
-2. Ask academic questions in chat
-3. Open document downloads when suggested by AI
-4. Track fees and reminders
+```text
+http://localhost:8000
+```
 
-### Admin
-1. Login from admin panel
-2. Review escalated queries
-3. Manage FAQs, timetable, fees, and PDFs
-4. Monitor download activity and fee reminders
+To override it, create `.env` files inside `UI/` or `UI-admin/`:
 
----
+```env
+VITE_API_BASE_URL=http://localhost:8000
+```
 
-## Notes on Atlas vs Local Fallback
+For the admin app, you can also override the student app link:
 
-- If Atlas is reachable, data is stored in your Atlas DB (default `eduagent_db`)
-- If Atlas fails (TLS/network), app can fallback to local Mongita
-- Local fallback location on Windows: `C:\Users\<username>\.mongita`
+```env
+VITE_CHAT_APP_URL=http://localhost:5173
+```
 
-Set `MONGO_FALLBACK_LOCAL=false` if you want strict Atlas-only behavior.
+## Notes for GitHub
 
----
+- Do not commit `.env`, database files, uploaded PDFs, vector databases, logs, or `node_modules`.
+- Uploaded PDFs are stored in `uploaded_pdfs/` during local development.
+- Vector data is stored in `vector_db/` during local development.
+- MongoDB Atlas is recommended when sharing the project across machines.
+- The default demo passwords are for development only.
 
-## Future Enhancements
+## Future Improvements
 
-- Role-based accounts and permissions
+- Role-based admin permissions
+- Stronger password hashing and account management
+- Email/SMS notification delivery
 - Payment reconciliation workflows
-- Automated reminders with scheduling rules
-- Hall-ticket generation flow
-- Notification center (in-app/email/SMS)
-- Analytics and audit logs
-
----
+- Hall ticket generation
+- Audit logs and analytics export
+- Automated tests for backend endpoints and agent behavior
 
 ## Author
 
-Maintained by **Yuvraj Pawar**  
-GitHub: [Yuvrajpawar45](https://github.com/Yuvrajpawar45)
+Maintained by **Yuvraj Pawar**
 
----
+GitHub: [Yuvrajpawar45](https://github.com/Yuvrajpawar45)
 
 ## License
 
-Use according to your repository license policy.
+No license file is currently included. Add a license before allowing public reuse or contributions.
